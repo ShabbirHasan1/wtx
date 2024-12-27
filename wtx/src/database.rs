@@ -48,17 +48,13 @@ pub type Identifier = crate::misc::ArrayString<64>;
 
 /// Database
 pub trait Database {
-  /// Prefix used to bind parameterized queries.
-  const BIND_PREFIX: &'static str;
-  /// Some databases require bindings in ascending order.
-  const IS_BIND_INCREASING: bool;
   /// See [`DatabaseTy`].
   const TY: DatabaseTy;
 
   /// Contains the data used to decode types.
   type DecodeValue<'exec>;
   /// Contains the data used to decode types.
-  type EncodeValue<'buffer, 'tmp>: crate::misc::LeaseMut<crate::misc::FilledBufferWriter<'buffer>>
+  type EncodeValue<'buffer, 'tmp>: crate::misc::LeaseMut<crate::misc::SuffixWriterFbvm<'buffer>>
   where
     'buffer: 'tmp;
   /// See [`crate::Error`].
@@ -72,13 +68,11 @@ pub trait Database {
 }
 
 impl Database for () {
-  const BIND_PREFIX: &'static str = "$";
-  const IS_BIND_INCREASING: bool = true;
   const TY: DatabaseTy = DatabaseTy::Unit;
 
   type DecodeValue<'exec> = ();
   type EncodeValue<'buffer, 'tmp>
-    = crate::misc::FilledBufferWriter<'buffer>
+    = crate::misc::SuffixWriterFbvm<'buffer>
   where
     'buffer: 'tmp;
   type Error = crate::Error;

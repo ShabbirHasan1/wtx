@@ -20,8 +20,8 @@ where
   /// Pushes initial encoding data.
   #[inline]
   pub fn new(ev: &'ev mut EncodeValue<'buffer, 'tmp>) -> Result<Self, E> {
-    let start = ev.fbw()._len();
-    ev.fbw().extend_from_slice(&[0; 4])?;
+    let start = ev.sw()._len();
+    ev.sw().extend_from_slice(&[0; 4])?;
     Ok(Self { ev, len: 0, phantom: PhantomData, start })
   }
 
@@ -40,15 +40,15 @@ where
   where
     T: Encode<Postgres<E>>,
   {
-    self.ev.fbw().extend_from_slice(&u32::from(ty).to_be_bytes())?;
+    self.ev.sw().extend_from_slice(&u32::from(ty).to_be_bytes())?;
     if value.is_null() {
-      self.ev.fbw().extend_from_slice(&(-1i32).to_be_bytes())?;
+      self.ev.sw().extend_from_slice(&(-1i32).to_be_bytes())?;
     } else {
-      let len_start = self.ev.fbw()._len();
-      self.ev.fbw().extend_from_slice(&[0; 4])?;
-      let elem_start = self.ev.fbw()._len();
+      let len_start = self.ev.sw()._len();
+      self.ev.sw().extend_from_slice(&[0; 4])?;
+      let elem_start = self.ev.sw()._len();
       value.encode(self.ev)?;
-      let len = self.ev.fbw()._len().wrapping_sub(elem_start).try_into().unwrap_or_default();
+      let len = self.ev.sw()._len().wrapping_sub(elem_start).try_into().unwrap_or_default();
       write_len(self.ev, len_start, len);
     }
     self.len = self.len.wrapping_add(1);
@@ -65,7 +65,7 @@ impl<E> Drop for StructEncoder<'_, '_, '_, E> {
 
 #[inline]
 fn write_len(ev: &mut EncodeValue<'_, '_>, start: usize, len: u32) {
-  let Some([a, b, c, d, ..]) = ev.fbw()._curr_bytes_mut().get_mut(start..) else {
+  let Some([a, b, c, d, ..]) = ev.sw()._curr_bytes_mut().get_mut(start..) else {
     return;
   };
   let [e, f, g, h] = len.to_be_bytes();

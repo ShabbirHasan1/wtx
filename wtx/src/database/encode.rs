@@ -1,6 +1,6 @@
 use crate::{
   database::Database,
-  misc::{Either, FilledBufferWriter},
+  misc::{Either, SuffixWriterFbvm},
 };
 
 /// Encodes a type into a byte representation.
@@ -20,14 +20,14 @@ where
 
 impl Encode<()> for u32 {
   #[inline]
-  fn encode(&self, _: &mut FilledBufferWriter<'_>) -> Result<(), crate::Error> {
+  fn encode(&self, _: &mut SuffixWriterFbvm<'_>) -> Result<(), crate::Error> {
     Ok(())
   }
 }
 
 impl Encode<()> for &str {
   #[inline]
-  fn encode(&self, _: &mut FilledBufferWriter<'_>) -> Result<(), crate::Error> {
+  fn encode(&self, _: &mut SuffixWriterFbvm<'_>) -> Result<(), crate::Error> {
     Ok(())
   }
 }

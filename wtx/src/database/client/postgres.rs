@@ -52,8 +52,6 @@ impl<E> Database for Postgres<E>
 where
   E: From<crate::Error>,
 {
-  const BIND_PREFIX: &'static str = "$";
-  const IS_BIND_INCREASING: bool = true;
   const TY: DatabaseTy = DatabaseTy::Postgres;
 
   type DecodeValue<'exec> = DecodeValue<'exec>;

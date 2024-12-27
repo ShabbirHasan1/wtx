@@ -18,22 +18,14 @@ const SCRAM: &str = "postgres://wtx_scram:wtx@localhost/wtx";
 async fn conn_scram_tls() {
   let uri = UriRef::new(SCRAM);
   let mut rng = Xorshift64::from(simple_seed());
+  let mut tls_config = crate::tls::Config::new();
+  tls_config.set_ca(include_bytes!("../../../../../.certs/root-ca.crt"));
   let _executor = Executor::<crate::Error, _, _>::connect_encrypted(
     &Config::from_uri(&uri).unwrap(),
     ExecutorBuffer::new(usize::MAX, &mut rng),
     &mut rng,
     TcpStream::connect(uri.hostname_with_implied_port()).await.unwrap(),
-    |stream| async {
-      Ok(
-        crate::misc::TokioRustlsConnector::from_auto()
-          .unwrap()
-          .push_certs(include_bytes!("../../../../../.certs/root-ca.crt"))
-          .unwrap()
-          .connect_without_client_auth(uri.hostname(), stream)
-          .await
-          .unwrap(),
-      )
-    },
+    (crate::tls::TlsStreamBuffer::default(), &tls_config),
   )
   .await
   .unwrap();
