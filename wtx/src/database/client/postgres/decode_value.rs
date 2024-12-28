@@ -2,12 +2,12 @@ use crate::database::client::postgres::ty::Ty;
 
 /// Struct used for decoding elements in PostgreSQL.
 #[derive(Debug, PartialEq)]
-pub struct DecodeValue<'any> {
+pub struct DecodeWrapper<'any> {
   bytes: &'any [u8],
   ty: Ty,
 }
 
-impl<'any> DecodeValue<'any> {
+impl<'any> DecodeWrapper<'any> {
   pub(crate) fn new(bytes: &'any [u8], ty: Ty) -> Self {
     Self { bytes, ty }
   }
@@ -25,7 +25,7 @@ impl<'any> DecodeValue<'any> {
   }
 }
 
-impl Default for DecodeValue<'_> {
+impl Default for DecodeWrapper<'_> {
   #[inline]
   fn default() -> Self {
     Self { bytes: &[], ty: Ty::Any }

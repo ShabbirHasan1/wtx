@@ -1,7 +1,7 @@
 use crate::{
   database::{
     client::postgres::{
-      statements::statement::Statement, Config, EncodeValue, Oid, Postgres, PostgresError,
+      statements::statement::Statement, Config, EncodeWrapper, Oid, Postgres, PostgresError,
     },
     RecordValues,
   },
@@ -40,7 +40,7 @@ where
       let mut aux = (0usize, 0);
       let _ = rv.encode_values(
         &mut aux,
-        &mut EncodeValue::new(local_fbw),
+        &mut EncodeWrapper::new(local_fbw),
         |(counter, start), local_ev| {
           *counter = counter.wrapping_add(1);
           *start = local_ev.sw()._len();

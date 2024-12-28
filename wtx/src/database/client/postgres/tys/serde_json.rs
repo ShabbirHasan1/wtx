@@ -1,5 +1,5 @@
 use crate::database::{
-  client::postgres::{DecodeValue, EncodeValue, Postgres, PostgresError, Ty},
+  client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, PostgresError, Ty},
   Decode, Encode, Json, Typed,
 };
 use serde::{Deserialize, Serialize};
@@ -10,7 +10,7 @@ where
   T: Deserialize<'de>,
 {
   #[inline]
-  fn decode(input: &mut DecodeValue<'de>) -> Result<Self, E> {
+  fn decode(input: &mut DecodeWrapper<'de>) -> Result<Self, E> {
     let [1, rest @ ..] = input.bytes() else {
       return Err(E::from(PostgresError::InvalidJsonFormat.into()));
     };
@@ -24,9 +24,9 @@ where
   T: Serialize,
 {
   #[inline]
-  fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
-    ev.sw()._extend_from_byte(1).map_err(Into::into)?;
-    serde_json::to_writer(ev.sw(), &self.0).map_err(Into::into)?;
+  fn encode(&self, ew: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
+    ew.sw()._extend_from_byte(1).map_err(Into::into)?;
+    serde_json::to_writer(ew.sw(), &self.0).map_err(Into::into)?;
     Ok(())
   }
 }

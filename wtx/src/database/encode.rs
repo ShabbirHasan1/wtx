@@ -9,7 +9,7 @@ where
   D: Database,
 {
   /// Performs the conversion.
-  fn encode(&self, ev: &mut D::EncodeValue<'_, '_>) -> Result<(), D::Error>;
+  fn encode(&self, ew: &mut D::EncodeValue<'_, '_>) -> Result<(), D::Error>;
 
   /// In rust terms, is the element `Option::None`?
   #[inline]

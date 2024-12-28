@@ -1,5 +1,5 @@
 use crate::database::{
-  client::postgres::{DecodeValue, EncodeValue, Postgres, Ty},
+  client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, Ty},
   Decode, Encode, Typed,
 };
 use uuid::Uuid;
@@ -9,8 +9,8 @@ where
   E: From<crate::Error>,
 {
   #[inline]
-  fn decode(dv: &mut DecodeValue<'de>) -> Result<Self, E> {
-    let elem = Uuid::from_slice(dv.bytes()).map_err(Into::into)?;
+  fn decode(dw: &mut DecodeWrapper<'de>) -> Result<Self, E> {
+    let elem = Uuid::from_slice(dw.bytes()).map_err(Into::into)?;
     Ok(elem)
   }
 }
@@ -20,8 +20,8 @@ where
   E: From<crate::Error>,
 {
   #[inline]
-  fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
-    ev.sw().extend_from_slice(self.as_bytes()).map_err(Into::into)?;
+  fn encode(&self, ew: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
+    ew.sw().extend_from_slice(self.as_bytes()).map_err(Into::into)?;
     Ok(())
   }
 }

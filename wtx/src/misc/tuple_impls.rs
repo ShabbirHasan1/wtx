@@ -259,7 +259,7 @@ macro_rules! impl_0_16 {
     mod postgres {
       use crate::database::{
         Decode, Encode, Typed,
-        client::postgres::{DecodeValue, EncodeValue, Postgres, StructDecoder, StructEncoder}
+        client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, StructDecoder, StructEncoder}
       };
 
       $(
@@ -269,8 +269,8 @@ macro_rules! impl_0_16 {
           ERR: From<crate::Error>,
         {
           #[inline]
-          fn decode(dv: &mut DecodeValue<'de>) -> Result<Self, ERR> {
-            let mut _sd = StructDecoder::<ERR>::new(dv);
+          fn decode(dw: &mut DecodeWrapper<'de>) -> Result<Self, ERR> {
+            let mut _sd = StructDecoder::<ERR>::new(dw);
             Ok((
               $( _sd.decode::<$T>()?, )*
             ))
@@ -283,8 +283,8 @@ macro_rules! impl_0_16 {
           ERR: From<crate::Error>,
         {
           #[inline]
-          fn encode(&self, _ev: &mut EncodeValue<'_, '_>) -> Result<(), ERR> {
-            let mut _ev = StructEncoder::<ERR>::new(_ev)?;
+          fn encode(&self, _ew: &mut EncodeWrapper<'_, '_>) -> Result<(), ERR> {
+            let mut _ev = StructEncoder::<ERR>::new(_ew)?;
             $(
               _ev = _ev.encode(&self.$N)?;
             )*

@@ -1,5 +1,5 @@
 use crate::database::{
-  client::postgres::{DecodeValue, EncodeValue, Postgres, Ty},
+  client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, Ty},
   DatabaseError, Decode, Encode, Typed,
 };
 use chrono::{DateTime, Duration, NaiveDate, NaiveDateTime, TimeDelta, TimeZone, Utc};
@@ -12,8 +12,8 @@ where
   E: From<crate::Error>,
 {
   #[inline]
-  fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
-    let naive = <NaiveDateTime as Decode<Postgres<E>>>::decode(dv)?;
+  fn decode(dw: &mut DecodeWrapper<'_>) -> Result<Self, E> {
+    let naive = <NaiveDateTime as Decode<Postgres<E>>>::decode(dw)?;
     Ok(Utc.from_utc_datetime(&naive))
   }
 }
@@ -24,8 +24,8 @@ where
   TZ: TimeZone,
 {
   #[inline]
-  fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
-    Encode::<Postgres<E>>::encode(&self.naive_utc(), ev)
+  fn encode(&self, ew: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
+    Encode::<Postgres<E>>::encode(&self.naive_utc(), ew)
   }
 }
 
@@ -42,8 +42,8 @@ where
   E: From<crate::Error>,
 {
   #[inline]
-  fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
-    let days: i32 = Decode::<Postgres<E>>::decode(dv)?;
+  fn decode(dw: &mut DecodeWrapper<'_>) -> Result<Self, E> {
+    let days: i32 = Decode::<Postgres<E>>::decode(dw)?;
     pg_epoch_nd()
       .and_then(|el| el.checked_add_signed(TimeDelta::try_days(days.into())?))
       .ok_or_else(|| {
@@ -57,7 +57,7 @@ where
   E: From<crate::Error>,
 {
   #[inline]
-  fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+  fn encode(&self, ew: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
     Encode::<Postgres<E>>::encode(
       &match pg_epoch_nd().and_then(|epoch| {
         if self < &MIN_PG_ND? || self > &MAX_CHRONO_ND? {
@@ -70,7 +70,7 @@ where
           return Err(E::from(DatabaseError::UnexpectedValueFromBytes { expected: "date" }.into()))
         }
       },
-      ev,
+      ew,
     )
   }
 }
@@ -87,8 +87,8 @@ where
   E: From<crate::Error>,
 {
   #[inline]
-  fn decode(dv: &mut DecodeValue) -> Result<Self, E> {
-    let timestamp = Decode::<Postgres<E>>::decode(dv)?;
+  fn decode(dw: &mut DecodeWrapper) -> Result<Self, E> {
+    let timestamp = Decode::<Postgres<E>>::decode(dw)?;
     pg_epoch_ndt()
       .and_then(|el| el.checked_add_signed(Duration::microseconds(timestamp)))
       .ok_or_else(|| {
@@ -102,7 +102,7 @@ where
   E: From<crate::Error>,
 {
   #[inline]
-  fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+  fn encode(&self, ew: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
     Encode::<Postgres<E>>::encode(
       &match pg_epoch_ndt().and_then(|epoch| {
         if self < &MIN_PG_ND?.and_hms_opt(0, 0, 0)?
@@ -119,7 +119,7 @@ where
           ))
         }
       },
-      ev,
+      ew,
     )
   }
 }

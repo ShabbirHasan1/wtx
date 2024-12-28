@@ -24,12 +24,15 @@ mod transaction_manager;
 mod ty;
 mod tys;
 
-use crate::database::{Database, DatabaseTy};
+use crate::{
+  database::{Database, DatabaseTy},
+  misc::DEController,
+};
 pub use config::Config;
 use core::marker::PhantomData;
 pub use db_error::{DbError, ErrorPosition, Severity};
-pub use decode_value::DecodeValue;
-pub use encode_value::EncodeValue;
+pub use decode_value::DecodeWrapper;
+pub use encode_value::EncodeWrapper;
 pub use executor::Executor;
 pub use executor_buffer::ExecutorBuffer;
 pub use postgres_error::PostgresError;
@@ -54,15 +57,24 @@ where
 {
   const TY: DatabaseTy = DatabaseTy::Postgres;
 
-  type DecodeValue<'exec> = DecodeValue<'exec>;
+  type DecodeValue<'exec> = DecodeWrapper<'exec>;
   type EncodeValue<'buffer, 'tmp>
-    = EncodeValue<'buffer, 'tmp>
+    = EncodeWrapper<'buffer, 'tmp>
   where
     'buffer: 'tmp;
   type Error = E;
   type Record<'exec> = Record<'exec, E>;
   type Records<'exec> = Records<'exec, E>;
   type Ty = Ty;
+}
+
+impl<E> DEController for Postgres<E>
+where
+  E: From<crate::Error>,
+{
+  type DecodeWrapper<'dw> = DecodeWrapper<'dw>;
+  type Error = E;
+  type EncodeWrapper<'ew> = EncodeWrapper<'ew, 'ew>;
 }
 
 impl<E> Default for Postgres<E> {

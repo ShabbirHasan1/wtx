@@ -1,6 +1,6 @@
 use crate::{
   database::{
-    client::postgres::{DecodeValue, Postgres, PostgresError, Ty},
+    client::postgres::{DecodeWrapper, Postgres, PostgresError, Ty},
     Decode,
   },
   misc::Usize,
@@ -20,8 +20,8 @@ where
 {
   /// Decodes initial data.
   #[inline]
-  pub fn new(dv: &mut DecodeValue<'any>) -> Self {
-    let bytes = if let [_, _, _, _, rest @ ..] = dv.bytes() { rest } else { dv.bytes() };
+  pub fn new(dw: &mut DecodeWrapper<'any>) -> Self {
+    let bytes = if let [_, _, _, _, rest @ ..] = dw.bytes() { rest } else { dw.bytes() };
     Self { bytes, phantom: PhantomData }
   }
 
@@ -53,6 +53,6 @@ where
       return Ok(None);
     };
     self.bytes = after;
-    Ok(Some(T::decode(&mut DecodeValue::new(before, ty))?))
+    Ok(Some(T::decode(&mut DecodeWrapper::new(before, ty))?))
   }
 }
