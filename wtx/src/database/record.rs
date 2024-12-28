@@ -35,7 +35,7 @@ pub trait Record<'exec>: Sized {
   fn len(&self) -> usize;
 
   /// Tries to retrieve a value.
-  fn value<CI>(&self, ci: CI) -> Option<<Self::Database as DEController>::DecodeWrapper<'exec>>
+  fn value<CI>(&self, ci: CI) -> Option<<Self::Database as DEController>::DecodeWrapper<'_, 'exec>>
   where
     CI: ValueIdent<Self>;
 }
@@ -49,7 +49,7 @@ impl Record<'_> for () {
   }
 
   #[inline]
-  fn value<CI>(&self, _: CI) -> Option<<Self::Database as DEController>::DecodeWrapper<'_>>
+  fn value<CI>(&self, _: CI) -> Option<<Self::Database as DEController>::DecodeWrapper<'_, '_>>
   where
     CI: ValueIdent<Self>,
   {

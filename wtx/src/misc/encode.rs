@@ -1,4 +1,4 @@
-use crate::misc::{DEController, Either, Lease};
+use crate::misc::{DEController, Either};
 
 /// Encodes itself into a data format.
 pub trait Encode<DEC>

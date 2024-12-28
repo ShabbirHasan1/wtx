@@ -23,7 +23,7 @@ where
   }
 
   #[inline]
-  fn value<CI>(&self, _: CI) -> Option<<Self::Database as DEController>::DecodeWrapper<'exec>>
+  fn value<CI>(&self, _: CI) -> Option<<Self::Database as DEController>::DecodeWrapper<'_, 'exec>>
   where
     CI: ValueIdent<Self>,
   {

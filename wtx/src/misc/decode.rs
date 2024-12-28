@@ -6,7 +6,7 @@ where
   DEC: DEController,
 {
   /// Performs the conversion.
-  fn decode(dw: &mut DEC::DecodeWrapper<'de>) -> Result<Self, DEC::Error>;
+  fn decode(dw: &mut DEC::DecodeWrapper<'_, 'de>) -> Result<Self, DEC::Error>;
 }
 
 impl Decode<'_, ()> for &str {
@@ -36,7 +36,10 @@ where
   DEC: DEController,
 {
   /// Decodes a sequence of itself into a buffer
-  fn decode_seq(buffer: &mut Vector<Self>, dw: &mut DEC::DecodeWrapper<'de>) -> crate::Result<()>;
+  fn decode_seq(
+    buffer: &mut Vector<Self>,
+    dw: &mut DEC::DecodeWrapper<'_, 'de>,
+  ) -> Result<(), DEC::Error>;
 }
 
 impl DecodeSeq<'_, ()> for &str {

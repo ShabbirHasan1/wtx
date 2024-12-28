@@ -49,7 +49,7 @@ impl<E> DEController for Mysql<E>
 where
   E: From<crate::Error>,
 {
-  type DecodeWrapper<'any> = DecodeWrapper<'any>;
+  type DecodeWrapper<'any, 'de> = DecodeWrapper<'de>;
   type Error = E;
   type EncodeWrapper<'inner, 'outer>
     = EncodeWrapper<'inner, 'outer>
@@ -63,10 +63,3 @@ impl<E> Default for Mysql<E> {
     Self(PhantomData)
   }
 }
-
-// TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-// Unificar os comandos clear e table_names
-// Tentar remover a duplicacao das implemetnatcoes de tipos
-// Tentar remover duplicacao do dbMigration
-// FromRecord esta duplicado
-// VErificar a implementacao do chono

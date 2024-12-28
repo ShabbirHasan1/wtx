@@ -2,19 +2,19 @@ use crate::{database::client::postgres::ty::Ty, misc::Lease};
 
 /// Struct used for decoding elements in PostgreSQL.
 #[derive(Debug, PartialEq)]
-pub struct DecodeWrapper<'any> {
-  bytes: &'any [u8],
+pub struct DecodeWrapper<'de> {
+  bytes: &'de [u8],
   ty: Ty,
 }
 
-impl<'any> DecodeWrapper<'any> {
-  pub(crate) fn new(bytes: &'any [u8], ty: Ty) -> Self {
+impl<'de> DecodeWrapper<'de> {
+  pub(crate) fn new(bytes: &'de [u8], ty: Ty) -> Self {
     Self { bytes, ty }
   }
 
-  /// Bytes of a column.
+  /// Bytes
   #[inline]
-  pub fn bytes(&self) -> &'any [u8] {
+  pub fn bytes(&self) -> &'de [u8] {
     self.bytes
   }
 

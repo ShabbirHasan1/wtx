@@ -66,7 +66,7 @@ impl<E> DEController for Postgres<E>
 where
   E: From<crate::Error>,
 {
-  type DecodeWrapper<'any> = DecodeWrapper<'any>;
+  type DecodeWrapper<'any, 'de> = DecodeWrapper<'de>;
   type Error = E;
   type EncodeWrapper<'inner, 'outer>
     = EncodeWrapper<'inner, 'outer>
