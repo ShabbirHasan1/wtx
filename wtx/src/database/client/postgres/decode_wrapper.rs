@@ -1,13 +1,13 @@
-use crate::database::client::mysql::Ty;
+use crate::{database::client::postgres::ty::Ty, misc::Lease};
 
-/// Struct used for decoding elements in MySQL.
+/// Struct used for decoding elements in PostgreSQL.
 #[derive(Debug, PartialEq)]
-pub struct DecodeValue<'any> {
+pub struct DecodeWrapper<'any> {
   bytes: &'any [u8],
   ty: Ty,
 }
 
-impl<'any> DecodeValue<'any> {
+impl<'any> DecodeWrapper<'any> {
   pub(crate) fn new(bytes: &'any [u8], ty: Ty) -> Self {
     Self { bytes, ty }
   }
@@ -25,9 +25,16 @@ impl<'any> DecodeValue<'any> {
   }
 }
 
-impl Default for DecodeValue<'_> {
+impl Default for DecodeWrapper<'_> {
   #[inline]
   fn default() -> Self {
-    Self { bytes: &[], ty: Ty::Null }
+    Self { bytes: &[], ty: Ty::Any }
+  }
+}
+
+impl Lease<[u8]> for DecodeWrapper<'_> {
+  #[inline]
+  fn lease(&self) -> &[u8] {
+    self.bytes
   }
 }

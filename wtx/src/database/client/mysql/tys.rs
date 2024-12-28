@@ -27,10 +27,10 @@ macro_rules! test {
     fn $name() {
       let vec = &mut crate::misc::FilledBuffer::_new();
       let mut sw = crate::misc::SuffixWriter::new(0, vec._vector_mut());
-      let mut ev = EncodeValue::new(&mut sw);
+      let mut ev = EncodeWrapper::new(&mut sw);
       let instance: $ty = $instance;
       Encode::<Mysql<crate::Error>>::encode(&instance, &mut ev).unwrap();
-      let decoded: $ty = Decode::<Mysql<crate::Error>>::decode(&mut DecodeValue::new(
+      let decoded: $ty = Decode::<Mysql<crate::Error>>::decode(&mut DecodeWrapper::new(
         ev.sw()._curr_bytes(),
         crate::database::client::mysql::Ty::Tiny,
       ))
@@ -44,10 +44,10 @@ macro_rules! test {
 mod chrono {
   use crate::{
     database::{
-      client::mysql::{DecodeValue, EncodeValue, Mysql, Ty},
-      DatabaseError, Decode, Encode, Typed,
+      client::mysql::{DecodeWrapper, EncodeWrapper, Mysql, Ty},
+      DatabaseError, Typed,
     },
-    misc::Usize,
+    misc::{Decode, Encode, Usize},
   };
   use chrono::{DateTime, Datelike, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Timelike, Utc};
   use core::any::type_name;
@@ -57,7 +57,7 @@ mod chrono {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeWrapper<'_>) -> Result<Self, E> {
       let naive = <NaiveDateTime as Decode<Mysql<E>>>::decode(dv)?;
       Ok(Utc.from_utc_datetime(&naive))
     }
@@ -67,7 +67,7 @@ mod chrono {
     E: From<crate::Error>,
   {
     #[inline]
-    fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+    fn encode(&self, ev: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
       Encode::<Mysql<E>>::encode(&self.naive_utc(), ev)
     }
   }
@@ -83,7 +83,7 @@ mod chrono {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeWrapper<'_>) -> Result<Self, E> {
       date_decode(dv).map(|el| el.1).map_err(E::from)
     }
   }
@@ -92,7 +92,7 @@ mod chrono {
     E: From<crate::Error>,
   {
     #[inline]
-    fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+    fn encode(&self, ev: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
       date_encode(self, ev, 4).map_err(E::from)
     }
   }
@@ -108,7 +108,7 @@ mod chrono {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeWrapper<'_>) -> Result<Self, E> {
       let (len, date) = date_decode(dv).map_err(E::from)?;
       Ok(if len > 4 {
         let bytes = if let [_, _, _, _, _, bytes @ ..] = dv.bytes() { bytes } else { &[] };
@@ -123,7 +123,7 @@ mod chrono {
     E: From<crate::Error>,
   {
     #[inline]
-    fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+    fn encode(&self, ev: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
       let len = date_len(self);
       date_encode(&self.date(), ev, len)?;
       if len > 4 {
@@ -140,7 +140,7 @@ mod chrono {
   }
 
   #[inline]
-  fn date_decode(dv: &mut DecodeValue<'_>) -> crate::Result<(u8, NaiveDate)> {
+  fn date_decode(dv: &mut DecodeWrapper<'_>) -> crate::Result<(u8, NaiveDate)> {
     let [len, year_a, year_b, month, day] = dv.bytes() else {
       return Err(
         DatabaseError::UnexpectedBufferSize {
@@ -157,7 +157,7 @@ mod chrono {
   }
 
   #[inline]
-  fn date_encode(date: &NaiveDate, ev: &mut EncodeValue<'_, '_>, len: u8) -> crate::Result<()> {
+  fn date_encode(date: &NaiveDate, ev: &mut EncodeWrapper<'_, '_>, len: u8) -> crate::Result<()> {
     let year = u16::try_from(date.year()).map_err(|_err| {
       DatabaseError::UnexpectedValueFromBytes { expected: type_name::<NaiveDate>() }
     })?;
@@ -230,7 +230,7 @@ mod chrono {
   fn time_encode(
     time: &NaiveTime,
     include_micros: bool,
-    ev: &mut EncodeValue<'_, '_>,
+    ev: &mut EncodeWrapper<'_, '_>,
   ) -> crate::Result<()> {
     let hour = time.hour().try_into().unwrap_or_default();
     let minute = time.minute().try_into().unwrap_or_default();
@@ -250,10 +250,10 @@ mod chrono {
 mod collections {
   use crate::{
     database::{
-      client::mysql::{DecodeValue, EncodeValue, Mysql, Ty},
-      Decode, Encode, Typed,
+      client::mysql::{DecodeWrapper, EncodeWrapper, Mysql, Ty},
+      Typed,
     },
-    misc::{from_utf8_basic, ArrayString},
+    misc::{from_utf8_basic, ArrayString, Decode, Encode},
   };
   use alloc::string::String;
 
@@ -264,7 +264,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &mut DecodeValue<'exec>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeWrapper<'exec>) -> Result<Self, E> {
       Ok(dv.bytes())
     }
   }
@@ -273,7 +273,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+    fn encode(&self, ev: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
       ev.sw().extend_from_slice(self).map_err(Into::into)?;
       Ok(())
     }
@@ -293,7 +293,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeWrapper<'_>) -> Result<Self, E> {
       Ok(from_utf8_basic(dv.bytes()).map_err(Into::into)?.try_into().map_err(Into::into)?)
     }
   }
@@ -302,7 +302,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+    fn encode(&self, ev: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
       ev.sw().extend_from_slice(self.as_str().as_bytes()).map_err(Into::into)?;
       Ok(())
     }
@@ -320,7 +320,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &mut DecodeValue<'exec>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeWrapper<'exec>) -> Result<Self, E> {
       Ok(from_utf8_basic(dv.bytes()).map_err(crate::Error::from)?)
     }
   }
@@ -329,7 +329,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+    fn encode(&self, ev: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
       ev.sw().extend_from_slice(self.as_bytes()).map_err(Into::into)?;
       Ok(())
     }
@@ -349,7 +349,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeWrapper<'_>) -> Result<Self, E> {
       match from_utf8_basic(dv.bytes()).map_err(crate::Error::from) {
         Ok(elem) => Ok(elem.into()),
         Err(err) => Err(err.into()),
@@ -361,7 +361,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+    fn encode(&self, ev: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
       ev.sw().extend_from_slice(self.as_bytes()).map_err(Into::into)?;
       Ok(())
     }
@@ -378,10 +378,10 @@ mod collections {
 mod primitives {
   use crate::{
     database::{
-      client::mysql::{DecodeValue, EncodeValue, Mysql, Ty},
-      DatabaseError, Decode, Encode, Typed,
+      client::mysql::{DecodeWrapper, EncodeWrapper, Mysql, Ty},
+      DatabaseError, Typed,
     },
-    misc::Usize,
+    misc::{Decode, Encode, Usize},
   };
 
   // bool
@@ -391,7 +391,7 @@ mod primitives {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeWrapper<'_>) -> Result<Self, E> {
       let &[byte] = dv.bytes() else {
         return Err(E::from(
           DatabaseError::UnexpectedBufferSize {
@@ -409,7 +409,7 @@ mod primitives {
     E: From<crate::Error>,
   {
     #[inline]
-    fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+    fn encode(&self, ev: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
       ev.sw()._extend_from_byte((*self).into()).map_err(Into::into)?;
       Ok(())
     }
@@ -430,7 +430,7 @@ mod primitives {
           E: From<crate::Error>,
         {
           #[inline]
-          fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
+          fn decode(dv: &mut DecodeWrapper<'_>) -> Result<Self, E> {
             if let &[$($elem,)+] = dv.bytes() {
                 return Ok(<Self>::from_be_bytes([$($elem),+]));
               }
@@ -445,7 +445,7 @@ mod primitives {
           E: From<crate::Error>,
         {
           #[inline]
-          fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+          fn encode(&self, ev: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
             ev.sw().extend_from_slice(&self.to_be_bytes()).map_err(Into::into)?;
             Ok(())
           }
@@ -468,7 +468,7 @@ mod primitives {
           E: From<crate::Error>,
         {
           #[inline]
-          fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
+          fn decode(dv: &mut DecodeWrapper<'_>) -> Result<Self, E> {
             if let &[$($elem,)+] = dv.bytes() {
               return Ok(<Self>::from_be_bytes([$($elem),+]));
             }
@@ -484,7 +484,7 @@ mod primitives {
           E: From<crate::Error>,
         {
           #[inline]
-          fn encode(&self, ev: &mut EncodeValue<'_, '_>) -> Result<(), E> {
+          fn encode(&self, ev: &mut EncodeWrapper<'_, '_>) -> Result<(), E> {
             ev.sw().extend_from_slice(&self.to_be_bytes()).map_err(Into::into)?;
             Ok(())
           }

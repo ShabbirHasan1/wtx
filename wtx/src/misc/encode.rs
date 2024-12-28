@@ -1,4 +1,4 @@
-use crate::misc::{DEController, Either};
+use crate::misc::{DEController, Either, Lease};
 
 /// Encodes itself into a data format.
 pub trait Encode<DEC>
@@ -6,7 +6,7 @@ where
   DEC: DEController,
 {
   /// Performs the conversion.
-  fn encode(&self, ew: &mut DEC::EncodeWrapper<'_>) -> Result<(), DEC::Error>;
+  fn encode(&self, ew: &mut DEC::EncodeWrapper<'_, '_>) -> Result<(), DEC::Error>;
 
   /// If this instance can be desired nullable.
   #[inline]
@@ -35,7 +35,7 @@ where
   T: Encode<DEC>,
 {
   #[inline]
-  fn encode(&self, ew: &mut DEC::EncodeWrapper<'_>) -> Result<(), DEC::Error> {
+  fn encode(&self, ew: &mut DEC::EncodeWrapper<'_, '_>) -> Result<(), DEC::Error> {
     (**self).encode(ew)
   }
 
@@ -52,7 +52,7 @@ where
   R: Encode<DEC>,
 {
   #[inline]
-  fn encode(&self, ew: &mut DEC::EncodeWrapper<'_>) -> Result<(), DEC::Error> {
+  fn encode(&self, ew: &mut DEC::EncodeWrapper<'_, '_>) -> Result<(), DEC::Error> {
     match self {
       Self::Left(left) => left.encode(ew),
       Self::Right(right) => right.encode(ew),
@@ -73,7 +73,7 @@ where
   DEC: DEController,
 {
   #[inline]
-  fn encode(&self, ew: &mut DEC::EncodeWrapper<'_>) -> Result<(), DEC::Error> {
+  fn encode(&self, ew: &mut DEC::EncodeWrapper<'_, '_>) -> Result<(), DEC::Error> {
     (**self).encode(ew)
   }
 
@@ -89,7 +89,7 @@ where
   T: Encode<DEC>,
 {
   #[inline]
-  fn encode(&self, ew: &mut DEC::EncodeWrapper<'_>) -> Result<(), DEC::Error> {
+  fn encode(&self, ew: &mut DEC::EncodeWrapper<'_, '_>) -> Result<(), DEC::Error> {
     match self {
       None => Ok(()),
       Some(elem) => elem.encode(ew),

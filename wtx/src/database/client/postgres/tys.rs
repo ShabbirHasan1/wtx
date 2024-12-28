@@ -44,9 +44,9 @@ mod array {
   use crate::{
     database::{
       client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, Ty},
-      Decode, Encode, Typed,
+      Typed,
     },
-    misc::{from_utf8_basic, ArrayString},
+    misc::{from_utf8_basic, ArrayString, Decode, Encode},
   };
 
   impl<E, const N: usize> Decode<'_, Postgres<E>> for ArrayString<N>
@@ -91,9 +91,9 @@ mod collections {
   use crate::{
     database::{
       client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, Ty},
-      Decode, Encode, Typed,
+      Typed,
     },
-    misc::from_utf8_basic,
+    misc::{from_utf8_basic, Decode, Encode},
   };
   use alloc::string::String;
 
@@ -189,9 +189,12 @@ mod collections {
 }
 
 mod ip {
-  use crate::database::{
-    client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, PostgresError, Ty},
-    Decode, Encode, Typed,
+  use crate::{
+    database::{
+      client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, PostgresError, Ty},
+      Typed,
+    },
+    misc::{Decode, Encode},
   };
   use core::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
@@ -294,9 +297,9 @@ mod pg_numeric {
   use crate::{
     database::{
       client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, PostgresError},
-      DatabaseError, Decode, Encode,
+      DatabaseError,
     },
-    misc::{ArrayVector, Usize},
+    misc::{ArrayVector, Decode, Encode, Usize},
   };
 
   const _DIGITS_CAP: usize = 64;
@@ -416,9 +419,9 @@ mod primitives {
   use crate::{
     database::{
       client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, PostgresError, Ty},
-      DatabaseError, Decode, Encode, Typed,
+      DatabaseError, Typed,
     },
-    misc::Usize,
+    misc::{Decode, Encode, Usize},
   };
 
   // bool

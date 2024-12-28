@@ -3,8 +3,8 @@
 pub(crate) mod charset;
 pub(crate) mod collation;
 mod config;
-mod decode_value;
-mod encode_value;
+mod decode_wrapper;
+mod encode_wrapper;
 mod executor;
 mod executor_buffer;
 mod mysql_error;
@@ -14,11 +14,14 @@ mod transaction_manager;
 mod ty;
 mod tys;
 
-use crate::database::{Database, DatabaseTy};
+use crate::{
+  database::{Database, DatabaseTy},
+  misc::DEController,
+};
 pub use config::Config;
 use core::marker::PhantomData;
-pub use decode_value::DecodeValue;
-pub use encode_value::EncodeValue;
+pub use decode_wrapper::DecodeWrapper;
+pub use encode_wrapper::EncodeWrapper;
 pub use executor::Executor;
 pub use executor_buffer::ExecutorBuffer;
 pub use mysql_error::MysqlError;
@@ -37,15 +40,21 @@ where
 {
   const TY: DatabaseTy = DatabaseTy::Mysql;
 
-  type DecodeValue<'exec> = DecodeValue<'exec>;
-  type EncodeValue<'buffer, 'tmp>
-    = EncodeValue<'buffer, 'tmp>
-  where
-    'buffer: 'tmp;
-  type Error = E;
   type Record<'exec> = Record<'exec, E>;
   type Records<'exec> = Records<'exec, E>;
   type Ty = Ty;
+}
+
+impl<E> DEController for Mysql<E>
+where
+  E: From<crate::Error>,
+{
+  type DecodeWrapper<'any> = DecodeWrapper<'any>;
+  type Error = E;
+  type EncodeWrapper<'inner, 'outer>
+    = EncodeWrapper<'inner, 'outer>
+  where
+    'inner: 'outer;
 }
 
 impl<E> Default for Mysql<E> {

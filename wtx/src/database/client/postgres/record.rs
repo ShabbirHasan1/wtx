@@ -1,9 +1,9 @@
 use crate::{
   database::{
     client::postgres::{statements::statement::Statement, DecodeWrapper, Postgres, PostgresError},
-    Database, ValueIdent,
+    ValueIdent,
   },
-  misc::{Vector, _unlikely_dflt, _unlikely_elem},
+  misc::{DEController, Vector, _unlikely_dflt, _unlikely_elem},
 };
 use core::{marker::PhantomData, ops::Range};
 
@@ -102,7 +102,7 @@ where
   }
 
   #[inline]
-  fn value<CI>(&self, ci: CI) -> Option<<Self::Database as Database>::DecodeValue<'exec>>
+  fn value<CI>(&self, ci: CI) -> Option<<Self::Database as DEController>::DecodeWrapper<'exec>>
   where
     CI: ValueIdent<Self>,
   {

@@ -1,6 +1,9 @@
-use crate::database::{
-  client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, Ty},
-  Decode, Encode, Typed,
+use crate::{
+  database::{
+    client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, Ty},
+    Typed,
+  },
+  misc::{Decode, Encode},
 };
 use uuid::Uuid;
 

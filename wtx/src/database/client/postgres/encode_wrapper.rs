@@ -1,4 +1,4 @@
-use crate::misc::{Lease, LeaseMut, SuffixWriterFbvm};
+use crate::misc::{Lease, SuffixWriterFbvm};
 
 /// Struct used for encoding elements in PostgreSQL.
 #[derive(Debug)]
@@ -19,16 +19,9 @@ impl<'buffer, 'tmp> EncodeWrapper<'buffer, 'tmp> {
   }
 }
 
-impl<'buffer> Lease<SuffixWriterFbvm<'buffer>> for EncodeWrapper<'buffer, '_> {
+impl<'buffer> Lease<[u8]> for EncodeWrapper<'buffer, '_> {
   #[inline]
-  fn lease(&self) -> &SuffixWriterFbvm<'buffer> {
-    self.sw
-  }
-}
-
-impl<'buffer> LeaseMut<SuffixWriterFbvm<'buffer>> for EncodeWrapper<'buffer, '_> {
-  #[inline]
-  fn lease_mut(&mut self) -> &mut SuffixWriterFbvm<'buffer> {
-    self.sw
+  fn lease(&self) -> &[u8] {
+    self.sw._curr_bytes()
   }
 }

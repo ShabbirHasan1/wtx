@@ -16,7 +16,7 @@ use crate::{
     },
     Database, RecordValues, StmtCmd, TransactionManager as _,
   },
-  misc::{ConnectionState, LeaseMut, Rng, Stream, SuffixWriter},
+  misc::{ConnectionState, DEController, LeaseMut, Rng, Stream, SuffixWriter},
 };
 use core::marker::PhantomData;
 
@@ -152,7 +152,7 @@ where
     &mut self,
     sc: SC,
     rv: RV,
-  ) -> Result<u64, <Self::Database as Database>::Error>
+  ) -> Result<u64, <Self::Database as DEController>::Error>
   where
     RV: RecordValues<Self::Database>,
     SC: StmtCmd,

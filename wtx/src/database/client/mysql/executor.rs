@@ -3,7 +3,7 @@ use crate::{
     client::mysql::{ExecutorBuffer, Mysql, TransactionManager},
     Database, RecordValues, StmtCmd,
   },
-  misc::{ConnectionState, LeaseMut, Stream},
+  misc::{ConnectionState, DEController, LeaseMut, Stream},
 };
 use core::marker::PhantomData;
 
@@ -50,7 +50,7 @@ where
     &mut self,
     _: SC,
     _: RV,
-  ) -> Result<u64, <Self::Database as Database>::Error>
+  ) -> Result<u64, <Self::Database as DEController>::Error>
   where
     RV: RecordValues<Self::Database>,
     SC: StmtCmd,

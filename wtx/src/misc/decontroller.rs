@@ -1,15 +1,22 @@
+use crate::misc::Lease;
+
 /// Decode/Encode Controller
 pub trait DEController {
   /// Decode wrapper
-  type DecodeWrapper<'dw>;
+  type DecodeWrapper<'any>: Lease<[u8]>;
   /// Error
   type Error: From<crate::Error>;
   /// Encode wrapper
-  type EncodeWrapper<'ew>;
+  type EncodeWrapper<'inner, 'outer>: Lease<[u8]>
+  where
+    'inner: 'outer;
 }
 
 impl DEController for () {
-  type DecodeWrapper<'dw> = ();
+  type DecodeWrapper<'any> = ();
   type Error = crate::Error;
-  type EncodeWrapper<'ew> = ();
+  type EncodeWrapper<'inner, 'outer>
+    = ()
+  where
+    'inner: 'outer;
 }

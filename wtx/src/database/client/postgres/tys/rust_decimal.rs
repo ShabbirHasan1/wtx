@@ -4,9 +4,9 @@ use crate::{
       tys::pg_numeric::{Sign, _PgNumeric},
       DecodeWrapper, EncodeWrapper, Postgres, PostgresError, Ty,
     },
-    Decode, Encode, Typed,
+    Typed,
   },
-  misc::ArrayVector,
+  misc::{ArrayVector, Decode, Encode},
 };
 use rust_decimal::{Decimal, MathematicalOps};
 

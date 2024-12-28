@@ -1,4 +1,7 @@
-use crate::database::{client::mysql::Mysql, Database, ValueIdent};
+use crate::{
+  database::{client::mysql::Mysql, ValueIdent},
+  misc::DEController,
+};
 use core::marker::PhantomData;
 
 /// Record
@@ -20,7 +23,7 @@ where
   }
 
   #[inline]
-  fn value<CI>(&self, _: CI) -> Option<<Self::Database as Database>::DecodeValue<'exec>>
+  fn value<CI>(&self, _: CI) -> Option<<Self::Database as DEController>::DecodeWrapper<'exec>>
   where
     CI: ValueIdent<Self>,
   {

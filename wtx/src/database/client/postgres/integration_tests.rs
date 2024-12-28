@@ -4,9 +4,9 @@ use crate::{
       Config, DecodeWrapper, EncodeWrapper, Executor, ExecutorBuffer, Postgres, PostgresError,
       StructDecoder, StructEncoder, Ty,
     },
-    Decode, Encode, Executor as _, Record, Records as _,
+    Executor as _, Record, Records as _,
   },
-  misc::{simple_seed, UriRef, Xorshift64},
+  misc::{simple_seed, Decode, Encode, UriRef, Xorshift64},
 };
 use alloc::string::String;
 use tokio::net::TcpStream;

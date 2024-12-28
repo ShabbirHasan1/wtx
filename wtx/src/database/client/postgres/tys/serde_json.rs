@@ -1,6 +1,9 @@
-use crate::database::{
-  client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, PostgresError, Ty},
-  Decode, Encode, Json, Typed,
+use crate::{
+  database::{
+    client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, PostgresError, Ty},
+    Json, Typed,
+  },
+  misc::{Decode, Encode},
 };
 use serde::{Deserialize, Serialize};
 

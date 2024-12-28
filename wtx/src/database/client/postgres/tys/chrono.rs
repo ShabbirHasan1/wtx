@@ -1,6 +1,9 @@
-use crate::database::{
-  client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, Ty},
-  DatabaseError, Decode, Encode, Typed,
+use crate::{
+  database::{
+    client::postgres::{DecodeWrapper, EncodeWrapper, Postgres, Ty},
+    DatabaseError, Typed,
+  },
+  misc::{Decode, Encode},
 };
 use chrono::{DateTime, Duration, NaiveDate, NaiveDateTime, TimeDelta, TimeZone, Utc};
 
