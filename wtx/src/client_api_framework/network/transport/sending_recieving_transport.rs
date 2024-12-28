@@ -58,7 +58,7 @@ pub trait SendingRecievingTransport<DRSR>:
       log_res(pkgs_aux.byte_buffer.lease());
       P::ExternalResponseContent::seq_from_bytes(
         buffer,
-        pkgs_aux.byte_buffer.get(range).unwrap_or_default(),
+        &mut pkgs_aux.byte_buffer.get(range).unwrap_or_default(),
         &mut pkgs_aux.drsr,
       )?;
       Ok(())
@@ -81,7 +81,7 @@ pub trait SendingRecievingTransport<DRSR>:
       let range = self.send_recv(pkg, pkgs_aux).await?;
       log_res(pkgs_aux.byte_buffer.lease());
       Ok(P::ExternalResponseContent::from_bytes(
-        pkgs_aux.byte_buffer.get(range).unwrap_or_default(),
+        &mut pkgs_aux.byte_buffer.get(range).unwrap_or_default(),
         &mut pkgs_aux.drsr,
       )?)
     }

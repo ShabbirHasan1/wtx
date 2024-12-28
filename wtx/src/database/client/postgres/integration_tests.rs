@@ -37,8 +37,8 @@ async fn custom_composite_type() {
   struct CustomCompositeType(u32, String);
 
   impl Decode<'_, Postgres<crate::Error>> for CustomCompositeType {
-    fn decode(input: &DecodeValue<'_>) -> Result<Self, crate::Error> {
-      let mut sd = StructDecoder::<crate::Error>::new(input);
+    fn decode(dv: &mut DecodeValue) -> Result<Self, crate::Error> {
+      let mut sd = StructDecoder::<crate::Error>::new(dv);
       Ok(Self(sd.decode()?, sd.decode()?))
     }
   }
@@ -86,8 +86,8 @@ async fn custom_domain() {
   struct CustomDomain(String);
 
   impl Decode<'_, Postgres<crate::Error>> for CustomDomain {
-    fn decode(input: &DecodeValue<'_>) -> Result<Self, crate::Error> {
-      Ok(Self(<_ as Decode<Postgres<crate::Error>>>::decode(input)?))
+    fn decode(dv: &mut DecodeValue) -> Result<Self, crate::Error> {
+      Ok(Self(<_ as Decode<Postgres<crate::Error>>>::decode(dv)?))
     }
   }
 
@@ -132,8 +132,8 @@ async fn custom_enum() {
   }
 
   impl Decode<'_, Postgres<crate::Error>> for Enum {
-    fn decode(input: &DecodeValue<'_>) -> Result<Self, crate::Error> {
-      let s = <&str as Decode<Postgres<crate::Error>>>::decode(input)?;
+    fn decode(dv: &mut DecodeValue) -> Result<Self, crate::Error> {
+      let s = <&str as Decode<Postgres<crate::Error>>>::decode(dv)?;
       Ok(match s {
         "foo" => Self::Foo,
         "bar" => Self::Bar,

@@ -30,7 +30,7 @@ macro_rules! test {
       let mut ev = EncodeValue::new(&mut sw);
       let instance: $ty = $instance;
       Encode::<Mysql<crate::Error>>::encode(&instance, &mut ev).unwrap();
-      let decoded: $ty = Decode::<Mysql<crate::Error>>::decode(&DecodeValue::new(
+      let decoded: $ty = Decode::<Mysql<crate::Error>>::decode(&mut DecodeValue::new(
         ev.sw()._curr_bytes(),
         crate::database::client::mysql::Ty::Tiny,
       ))
@@ -57,7 +57,7 @@ mod chrono {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
       let naive = <NaiveDateTime as Decode<Mysql<E>>>::decode(dv)?;
       Ok(Utc.from_utc_datetime(&naive))
     }
@@ -83,7 +83,7 @@ mod chrono {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
       date_decode(dv).map(|el| el.1).map_err(E::from)
     }
   }
@@ -108,7 +108,7 @@ mod chrono {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
       let (len, date) = date_decode(dv).map_err(E::from)?;
       Ok(if len > 4 {
         let bytes = if let [_, _, _, _, _, bytes @ ..] = dv.bytes() { bytes } else { &[] };
@@ -140,7 +140,7 @@ mod chrono {
   }
 
   #[inline]
-  fn date_decode(dv: &DecodeValue<'_>) -> crate::Result<(u8, NaiveDate)> {
+  fn date_decode(dv: &mut DecodeValue<'_>) -> crate::Result<(u8, NaiveDate)> {
     let [len, year_a, year_b, month, day] = dv.bytes() else {
       return Err(
         DatabaseError::UnexpectedBufferSize {
@@ -264,7 +264,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'exec>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'exec>) -> Result<Self, E> {
       Ok(dv.bytes())
     }
   }
@@ -293,7 +293,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
       Ok(from_utf8_basic(dv.bytes()).map_err(Into::into)?.try_into().map_err(Into::into)?)
     }
   }
@@ -320,7 +320,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'exec>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'exec>) -> Result<Self, E> {
       Ok(from_utf8_basic(dv.bytes()).map_err(crate::Error::from)?)
     }
   }
@@ -349,7 +349,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
       match from_utf8_basic(dv.bytes()).map_err(crate::Error::from) {
         Ok(elem) => Ok(elem.into()),
         Err(err) => Err(err.into()),
@@ -391,7 +391,7 @@ mod primitives {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
       let &[byte] = dv.bytes() else {
         return Err(E::from(
           DatabaseError::UnexpectedBufferSize {
@@ -430,13 +430,13 @@ mod primitives {
           E: From<crate::Error>,
         {
           #[inline]
-          fn decode(input: &DecodeValue<'_>) -> Result<Self, E> {
-            if let &[$($elem,)+] = input.bytes() {
+          fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
+            if let &[$($elem,)+] = dv.bytes() {
                 return Ok(<Self>::from_be_bytes([$($elem),+]));
               }
               Err(E::from(DatabaseError::UnexpectedBufferSize {
                 expected: Usize::from(size_of::<Self>()).into_u32().unwrap_or(u32::MAX),
-                received: Usize::from(input.bytes().len()).into()
+                received: Usize::from(dv.bytes().len()).into()
               }.into()))
           }
         }
@@ -468,13 +468,13 @@ mod primitives {
           E: From<crate::Error>,
         {
           #[inline]
-          fn decode(input: &DecodeValue<'_>) -> Result<Self, E> {
-            if let &[$($elem,)+] = input.bytes() {
+          fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
+            if let &[$($elem,)+] = dv.bytes() {
               return Ok(<Self>::from_be_bytes([$($elem),+]));
             }
             Err(E::from(DatabaseError::UnexpectedBufferSize {
               expected: Usize::from(size_of::<Self>()).into_u32().unwrap_or(u32::MAX),
-              received: Usize::from(input.bytes().len()).into()
+              received: Usize::from(dv.bytes().len()).into()
             }.into()))
           }
         }

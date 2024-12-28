@@ -269,7 +269,7 @@ macro_rules! impl_0_16 {
           ERR: From<crate::Error>,
         {
           #[inline]
-          fn decode(dv: &DecodeValue<'de>) -> Result<Self, ERR> {
+          fn decode(dv: &mut DecodeValue<'de>) -> Result<Self, ERR> {
             let mut _sd = StructDecoder::<ERR>::new(dv);
             Ok((
               $( _sd.decode::<$T>()?, )*

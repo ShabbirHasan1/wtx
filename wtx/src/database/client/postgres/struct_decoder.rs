@@ -20,7 +20,7 @@ where
 {
   /// Decodes initial data.
   #[inline]
-  pub fn new(dv: &DecodeValue<'any>) -> Self {
+  pub fn new(dv: &mut DecodeValue<'any>) -> Self {
     let bytes = if let [_, _, _, _, rest @ ..] = dv.bytes() { rest } else { dv.bytes() };
     Self { bytes, phantom: PhantomData }
   }
@@ -53,6 +53,6 @@ where
       return Ok(None);
     };
     self.bytes = after;
-    Ok(Some(T::decode(&DecodeValue::new(before, ty))?))
+    Ok(Some(T::decode(&mut DecodeValue::new(before, ty))?))
   }
 }

@@ -137,14 +137,14 @@ mod serde_json {
     E: Deserialize<'de>,
   {
     #[inline]
-    fn from_bytes(bytes: &'de [u8], _: &mut SerdeJson) -> crate::Result<Self> {
+    fn from_bytes(bytes: &mut &'de [u8], _: &mut SerdeJson) -> crate::Result<Self> {
       Ok(serde_json::from_slice(bytes)?)
     }
 
     #[inline]
     fn seq_from_bytes(
       buffer: &mut Vector<Self>,
-      bytes: &'de [u8],
+      bytes: &mut &'de [u8],
       _: &mut SerdeJson,
     ) -> crate::Result<()> {
       collect_using_serde_json(buffer, bytes)

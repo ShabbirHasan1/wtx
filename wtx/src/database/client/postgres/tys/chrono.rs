@@ -12,7 +12,7 @@ where
   E: From<crate::Error>,
 {
   #[inline]
-  fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+  fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
     let naive = <NaiveDateTime as Decode<Postgres<E>>>::decode(dv)?;
     Ok(Utc.from_utc_datetime(&naive))
   }
@@ -42,7 +42,7 @@ where
   E: From<crate::Error>,
 {
   #[inline]
-  fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+  fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
     let days: i32 = Decode::<Postgres<E>>::decode(dv)?;
     pg_epoch_nd()
       .and_then(|el| el.checked_add_signed(TimeDelta::try_days(days.into())?))
@@ -87,8 +87,8 @@ where
   E: From<crate::Error>,
 {
   #[inline]
-  fn decode(input: &DecodeValue<'_>) -> Result<Self, E> {
-    let timestamp = Decode::<Postgres<E>>::decode(input)?;
+  fn decode(dv: &mut DecodeValue) -> Result<Self, E> {
+    let timestamp = Decode::<Postgres<E>>::decode(dv)?;
     pg_epoch_ndt()
       .and_then(|el| el.checked_add_signed(Duration::microseconds(timestamp)))
       .ok_or_else(|| {

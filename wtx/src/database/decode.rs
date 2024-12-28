@@ -6,26 +6,26 @@ where
   D: Database,
 {
   /// Performs the conversion.
-  fn decode(dv: &D::DecodeValue<'de>) -> Result<Self, D::Error>;
+  fn decode(dv: &mut D::DecodeValue<'de>) -> Result<Self, D::Error>;
 }
 
 impl Decode<'_, ()> for &str {
   #[inline]
-  fn decode(_: &()) -> Result<Self, crate::Error> {
+  fn decode(_: &mut ()) -> Result<Self, crate::Error> {
     Ok("")
   }
 }
 
 impl Decode<'_, ()> for u32 {
   #[inline]
-  fn decode(_: &()) -> Result<Self, crate::Error> {
+  fn decode(_: &mut ()) -> Result<Self, crate::Error> {
     Ok(0)
   }
 }
 
 impl Decode<'_, ()> for u64 {
   #[inline]
-  fn decode(_: &()) -> Result<Self, crate::Error> {
+  fn decode(_: &mut ()) -> Result<Self, crate::Error> {
     Ok(0)
   }
 }

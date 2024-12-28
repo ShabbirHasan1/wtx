@@ -10,7 +10,7 @@ where
   T: Deserialize<'de>,
 {
   #[inline]
-  fn decode(input: &DecodeValue<'de>) -> Result<Self, E> {
+  fn decode(input: &mut DecodeValue<'de>) -> Result<Self, E> {
     let [1, rest @ ..] = input.bytes() else {
       return Err(E::from(PostgresError::InvalidJsonFormat.into()));
     };

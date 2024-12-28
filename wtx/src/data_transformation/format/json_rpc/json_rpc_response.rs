@@ -30,12 +30,12 @@ where
   D: Default,
 {
   #[inline]
-  fn from_bytes(_: &'de [u8], _: &mut ()) -> crate::Result<Self> {
+  fn from_bytes(_: &mut &'de [u8], _: &mut ()) -> crate::Result<Self> {
     Ok(Self { id: 0, method: None, result: Ok(D::default()) })
   }
 
   #[inline]
-  fn seq_from_bytes(_: &mut Vector<Self>, _: &'de [u8], _: &mut ()) -> crate::Result<()> {
+  fn seq_from_bytes(_: &mut Vector<Self>, _: &mut &'de [u8], _: &mut ()) -> crate::Result<()> {
     Ok(())
   }
 }
@@ -258,14 +258,14 @@ mod serde_json {
     R: serde::Deserialize<'de>,
   {
     #[inline]
-    fn from_bytes(bytes: &'de [u8], _: &mut SerdeJson) -> crate::Result<Self> {
+    fn from_bytes(bytes: &mut &'de [u8], _: &mut SerdeJson) -> crate::Result<Self> {
       Ok(serde_json::from_slice(bytes)?)
     }
 
     #[inline]
     fn seq_from_bytes(
       buffer: &mut Vector<Self>,
-      bytes: &'de [u8],
+      bytes: &mut &'de [u8],
       _: &mut SerdeJson,
     ) -> crate::Result<()> {
       collect_using_serde_json(buffer, bytes)

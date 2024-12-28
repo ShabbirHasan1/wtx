@@ -40,7 +40,7 @@ pub trait RecievingTransport<DRSR>: Transport<DRSR> {
       let range = self.recv(pkgs_aux).await?;
       log_res(pkgs_aux.byte_buffer.lease());
       Ok(P::ExternalResponseContent::from_bytes(
-        pkgs_aux.byte_buffer.get(range).unwrap_or_default(),
+        &mut pkgs_aux.byte_buffer.get(range).unwrap_or_default(),
         &mut pkgs_aux.drsr,
       )?)
     }

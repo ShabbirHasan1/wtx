@@ -30,7 +30,7 @@ macro_rules! test {
       let mut ev = EncodeValue::new(&mut sw);
       let instance: $ty = $instance;
       Encode::<Postgres<crate::Error>>::encode(&instance, &mut ev).unwrap();
-      let decoded: $ty = Decode::<Postgres<crate::Error>>::decode(&DecodeValue::new(
+      let decoded: $ty = Decode::<Postgres<crate::Error>>::decode(&mut DecodeValue::new(
         ev.sw()._curr_bytes(),
         crate::database::client::postgres::Ty::Any,
       ))
@@ -54,7 +54,7 @@ mod array {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
       Ok(from_utf8_basic(dv.bytes()).map_err(Into::into)?.try_into()?)
     }
   }
@@ -104,7 +104,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'exec>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'exec>) -> Result<Self, E> {
       Ok(dv.bytes())
     }
   }
@@ -133,7 +133,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'exec>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'exec>) -> Result<Self, E> {
       Ok(from_utf8_basic(dv.bytes()).map_err(crate::Error::from)?)
     }
   }
@@ -162,7 +162,7 @@ mod collections {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
       match from_utf8_basic(dv.bytes()).map_err(crate::Error::from) {
         Ok(elem) => Ok(elem.into()),
         Err(err) => Err(err.into()),
@@ -200,7 +200,7 @@ mod ip {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'exec>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'exec>) -> Result<Self, E> {
       Ok(match dv.bytes() {
         [2, ..] => IpAddr::V4(Ipv4Addr::decode(dv)?),
         [3, ..] => IpAddr::V6(Ipv6Addr::decode(dv)?),
@@ -234,7 +234,7 @@ mod ip {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'exec>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'exec>) -> Result<Self, E> {
       let [2, 32, 0, 4, e, f, g, h] = dv.bytes() else {
         return Err(E::from(PostgresError::InvalidIpFormat.into()));
       };
@@ -264,7 +264,7 @@ mod ip {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'exec>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'exec>) -> Result<Self, E> {
       let [3, 128, 0, 16, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t] = dv.bytes() else {
         return Err(E::from(PostgresError::InvalidIpFormat.into()));
       };
@@ -314,7 +314,7 @@ mod pg_numeric {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
       let [a, b, c, d, e, f, g, h, rest @ ..] = dv.bytes() else {
         return Err(E::from(
           DatabaseError::UnexpectedBufferSize {
@@ -428,7 +428,7 @@ mod primitives {
     E: From<crate::Error>,
   {
     #[inline]
-    fn decode(dv: &DecodeValue<'_>) -> Result<Self, E> {
+    fn decode(dv: &mut DecodeValue<'_>) -> Result<Self, E> {
       let &[byte] = dv.bytes() else {
         return Err(E::from(
           DatabaseError::UnexpectedBufferSize {
@@ -470,8 +470,8 @@ mod primitives {
         E: From<crate::Error>,
       {
         #[inline]
-        fn decode(input: &DecodeValue<'_>) -> Result<Self, E> {
-          <$signed as Decode::<Postgres<E>>>::decode(input)?
+        fn decode(dv: &mut DecodeValue) -> Result<Self, E> {
+          <$signed as Decode::<Postgres<E>>>::decode(dv)?
             .try_into()
             .map_err(|_err| E::from(PostgresError::InvalidPostgresUint.into()))
         }
@@ -507,13 +507,13 @@ mod primitives {
         E: From<crate::Error>,
       {
         #[inline]
-        fn decode(input: &DecodeValue<'_>) -> Result<Self, E> {
-          if let &[$($elem,)+] = input.bytes() {
+        fn decode(dv: &mut DecodeValue) -> Result<Self, E> {
+          if let &[$($elem,)+] = dv.bytes() {
             return Ok(<Self>::from_be_bytes([$($elem),+]));
           }
           Err(E::from(DatabaseError::UnexpectedBufferSize {
             expected: Usize::from(size_of::<Self>()).into_u32().unwrap_or(u32::MAX),
-            received: Usize::from(input.bytes().len()).into()
+            received: Usize::from(dv.bytes().len()).into()
           }.into()))
         }
       }

@@ -25,12 +25,12 @@ impl<DRSR> GrpcManager<DRSR> {
 
   /// Deserialize From Request Bytes.
   #[inline]
-  pub fn des_from_req_bytes<'de, T>(&mut self, bytes: &'de [u8]) -> crate::Result<T>
+  pub fn des_from_req_bytes<'de, T>(&mut self, bytes: &mut &'de [u8]) -> crate::Result<T>
   where
     VerbatimRequest<T>: Deserialize<'de, DRSR>,
   {
-    let elem = if let [_, _, _, _, _, elem @ ..] = bytes { elem } else { &[] };
-    Ok(VerbatimRequest::from_bytes(elem, &mut self.drsr)?.data)
+    let mut elem = if let [_, _, _, _, _, elem @ ..] = bytes { elem } else { &[] };
+    Ok(VerbatimRequest::from_bytes(&mut elem, &mut self.drsr)?.data)
   }
 
   /// Serialize to Response Bytes

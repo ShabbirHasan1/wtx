@@ -12,7 +12,7 @@ pub trait Record<'exec>: Sized {
     CI: ValueIdent<Self>,
     D: Decode<'exec, Self::Database>,
   {
-    D::decode(&self.value(ci).ok_or_else(|| DatabaseError::MissingFieldDataInDecoding.into())?)
+    D::decode(&mut self.value(ci).ok_or_else(|| DatabaseError::MissingFieldDataInDecoding.into())?)
   }
 
   /// Tries to retrieve and decode an optional value.
@@ -23,7 +23,7 @@ pub trait Record<'exec>: Sized {
     D: Decode<'exec, Self::Database>,
   {
     match self.value(ci) {
-      Some(elem) => Ok(Some(D::decode(&elem)?)),
+      Some(mut elem) => Ok(Some(D::decode(&mut elem)?)),
       None => Ok(None),
     }
   }

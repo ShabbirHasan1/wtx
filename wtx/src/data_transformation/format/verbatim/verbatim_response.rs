@@ -17,12 +17,12 @@ where
   D: Default,
 {
   #[inline]
-  fn from_bytes(_: &[u8], _: &mut ()) -> crate::Result<Self> {
+  fn from_bytes(_: &mut &'de [u8], _: &mut ()) -> crate::Result<Self> {
     Ok(Self { data: D::default() })
   }
 
   #[inline]
-  fn seq_from_bytes(_: &mut Vector<Self>, _: &'de [u8], _: &mut ()) -> crate::Result<()> {
+  fn seq_from_bytes(_: &mut Vector<Self>, _: &mut &'de [u8], _: &mut ()) -> crate::Result<()> {
     Ok(())
   }
 }
@@ -47,12 +47,12 @@ mod borsh {
     D: BorshDeserialize,
   {
     #[inline]
-    fn from_bytes(mut bytes: &'de [u8], _: &mut Borsh) -> crate::Result<Self> {
+    fn from_bytes(mut bytes: &mut &'de [u8], _: &mut Borsh) -> crate::Result<Self> {
       Ok(Self { data: D::deserialize(&mut bytes)? })
     }
 
     #[inline]
-    fn seq_from_bytes(_: &mut Vector<Self>, _: &'de [u8], _: &mut Borsh) -> crate::Result<()> {
+    fn seq_from_bytes(_: &mut Vector<Self>, _: &mut &'de [u8], _: &mut Borsh) -> crate::Result<()> {
       Err(DataTransformationError::UnsupportedOperation.into())
     }
   }
@@ -75,14 +75,14 @@ mod quick_protobuf {
     D: MessageRead<'de>,
   {
     #[inline]
-    fn from_bytes(bytes: &'de [u8], _: &mut QuickProtobuf) -> crate::Result<Self> {
+    fn from_bytes(bytes: &mut &'de [u8], _: &mut QuickProtobuf) -> crate::Result<Self> {
       Ok(Self { data: MessageRead::from_reader(&mut BytesReader::from_bytes(bytes), bytes)? })
     }
 
     #[inline]
     fn seq_from_bytes(
       _: &mut Vector<Self>,
-      _: &'de [u8],
+      _: &mut &'de [u8],
       _: &mut QuickProtobuf,
     ) -> crate::Result<()> {
       Err(DataTransformationError::UnsupportedOperation.into())
@@ -116,14 +116,14 @@ mod serde_json {
     D: serde::Deserialize<'de>,
   {
     #[inline]
-    fn from_bytes(bytes: &'de [u8], _: &mut SerdeJson) -> crate::Result<Self> {
+    fn from_bytes(bytes: &mut &'de [u8], _: &mut SerdeJson) -> crate::Result<Self> {
       Ok(Self { data: serde_json::from_slice(bytes)? })
     }
 
     #[inline]
     fn seq_from_bytes(
       buffer: &mut Vector<Self>,
-      bytes: &'de [u8],
+      bytes: &mut &'de [u8],
       _: &mut SerdeJson,
     ) -> crate::Result<()> {
       collect_using_serde_json(buffer, bytes)

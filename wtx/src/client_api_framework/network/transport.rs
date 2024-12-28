@@ -105,13 +105,13 @@ mod tests {
 
   impl<'de, DRSR> Deserialize<'de, DRSR> for _Pong {
     #[inline]
-    fn from_bytes(bytes: &[u8], _: &mut DRSR) -> crate::Result<Self> {
+    fn from_bytes(bytes: &mut &'de [u8], _: &mut DRSR) -> crate::Result<Self> {
       assert_eq!(bytes, b"ping");
       Ok(Self("pong"))
     }
 
     #[inline]
-    fn seq_from_bytes(_: &mut Vector<Self>, _: &'de [u8], _: &mut DRSR) -> crate::Result<()> {
+    fn seq_from_bytes(_: &mut Vector<Self>, _: &mut &'de [u8], _: &mut DRSR) -> crate::Result<()> {
       Ok(())
     }
   }

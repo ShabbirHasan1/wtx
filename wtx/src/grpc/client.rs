@@ -45,12 +45,12 @@ where
 
   /// Deserialize From Response Bytes
   #[inline]
-  pub fn des_from_res_bytes<'de, T>(&mut self, bytes: &'de [u8]) -> crate::Result<T>
+  pub fn des_from_res_bytes<'de, T>(&mut self, bytes: &mut &'de [u8]) -> crate::Result<T>
   where
     VerbatimResponse<T>: Deserialize<'de, DRSR>,
   {
-    let elem = if let [_, _, _, _, _, elem @ ..] = bytes { elem } else { &[] };
-    Ok(VerbatimResponse::from_bytes(elem, &mut self.drsr)?.data)
+    let mut elem = if let [_, _, _, _, _, elem @ ..] = bytes { elem } else { &[] };
+    Ok(VerbatimResponse::from_bytes(&mut elem, &mut self.drsr)?.data)
   }
 
   /// Send Unary Request

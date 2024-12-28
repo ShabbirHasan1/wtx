@@ -9,8 +9,8 @@ where
   E: From<crate::Error>,
 {
   #[inline]
-  fn decode(input: &DecodeValue<'de>) -> Result<Self, E> {
-    let elem = Uuid::from_slice(input.bytes()).map_err(Into::into)?;
+  fn decode(dv: &mut DecodeValue<'de>) -> Result<Self, E> {
+    let elem = Uuid::from_slice(dv.bytes()).map_err(Into::into)?;
     Ok(elem)
   }
 }
